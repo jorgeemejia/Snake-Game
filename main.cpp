@@ -1,5 +1,6 @@
 #include <iostream>
 #include <conio.h>
+#include <unistd.h>
 bool GameOver;
 const int width = 20;   //width of board
 const int height = 20;  //height of board
@@ -8,6 +9,9 @@ int y;  //head postion
 int fruitX; //fruit position
 int fruitY; //fruit position
 int score;
+int tailX[100];
+int tailY[100];
+int nTail;     //lenth of the tail
 enum eDirection{STOP = 0, LEFT, RIGHT, UP, DOWN}; //Enum is a user defined data type where we specify a set of values for a variable and the variable can only take one out of a small set of possible values
 eDirection dir;
 
@@ -52,7 +56,21 @@ for(int i = 0; i < height; i++)  //Creates the body of the board
     }
     else
     {
-      std::cout << " ";        //Else, keep the board empty
+      bool print = false;
+      for(int k = 0; k < nTail; k++)
+      {
+        
+        if(tailX[k]== j && tailY[k] == i)
+        {
+          std::cout << "o";
+          print = true;
+        }
+        
+        }
+        if(!print)
+        {
+          std::cout << " "; 
+      }
     }
   }
   std::cout << std::endl;  //Endl; to move lower and lower
@@ -66,6 +84,8 @@ for(int i = 0; i < height; i++)  //Creates the body of the board
   std::cout << std::endl;
 
   std::cout << "Score : " << score << std::endl;
+
+  std::cout << "Ntail: " << nTail << std::endl;
 }
 void Input()
 {
@@ -97,6 +117,25 @@ void Input()
 }
 void Logic()
 {
+int prevX = tailX[0];   //Previous coordinates of the tail
+int prevY = tailY[0];    //prevX/Y = beggining of array of tail coordinates
+int prev2X;             
+int prev2Y;             //Create prev2X/Y
+tailX[0] = x;         
+tailY[0] = y;           //the beggining of the array coordinates = head coordinates
+
+for(int i = 1; i < nTail; i++)
+{
+  prev2X = tailX[0];  //prev2X/Y equal the head coordinates now too
+  prev2Y = tailY[0];
+  tailX[i] = prevX;   //the second tail coordinates = the head coordinates
+  tailY[i] = prevY;
+  prevX = prev2X;     
+  prevY = prev2Y;
+
+
+}
+
 
 switch(dir)   //Based on what direction currently is, change coordinates of snake
 {
@@ -121,11 +160,22 @@ switch(dir)   //Based on what direction currently is, change coordinates of snak
     GameOver = true;
   }
 
+  for (int i = 0; i < nTail; i++)
+  {
+    if (tailX[i] == x && tailY[i] == y)
+    {
+      GameOver = true;
+    }
+  }
+  
+
+
   if ( x == fruitX && y == fruitY)  //If snake reaches the fruit, spawn fruit elsewhere, increase score
   {
     score = score + 1;
     fruitX = rand() % width;
     fruitY = rand() % height;
+    nTail++;
 
   }
 
@@ -139,7 +189,7 @@ int main()
     Draw();
     Input();
     Logic();
-    //Sleep(10);
+    //sleep(1);
   }
   return 0;
 }
