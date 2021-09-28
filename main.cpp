@@ -1,9 +1,13 @@
 #include <iostream>
 #include <conio.h>
 #include <unistd.h>
+#include <thread>
+#include <chrono>
 bool GameOver;
-const int width = 20;   //width of board
+const int width = 30;   //width of board
 const int height = 20;  //height of board
+int fruit_spawn_w = width - 1; //makes it so fruit won't spawn on borders
+int fruit_spawn_h = height - 1;
 int x;  //head position
 int y;  //head postion
 int fruitX; //fruit position
@@ -21,8 +25,8 @@ void Setup()
   dir = STOP; //Keeps snake still until player moves 
   x = width / 2;  //Snake starts in the middle of the board
   y = height / 2;  //Snake starts in the middle of the board
-  fruitX = rand() % width;
-  fruitY = rand() % height;
+  fruitX = rand() % fruit_spawn_w + 1;
+  fruitY = rand() % fruit_spawn_h + 1;
   score = 0;
 }
 void Draw()
@@ -30,7 +34,7 @@ void Draw()
 
   system("cls"); //to clear the screen in Visual C++
 
-  for (int i = 0; i < width; i++) ///Creates the top of the board
+  for (int i = 0; i < width+1; i++) ///Creates the top of the board
   {  
     std::cout << "#";
   }
@@ -38,7 +42,7 @@ void Draw()
   
 
 
-for(int i = 0; i < height; i++)  //Creates the body of the board
+for(int i = 1; i < height; i++)  //Creates the body of the board
 {
   for (int j = 0; j <= width; j++)
   {
@@ -56,18 +60,18 @@ for(int i = 0; i < height; i++)  //Creates the body of the board
     }
     else
     {
-      bool print = false;
+      bool tail = false;
       for(int k = 0; k < nTail; k++)
       {
         
         if(tailX[k]== j && tailY[k] == i)
         {
           std::cout << "o";
-          print = true;
+          tail = true;
         }
         
         }
-        if(!print)
+        if(!tail)
         {
           std::cout << " "; 
       }
@@ -84,8 +88,6 @@ for(int i = 0; i < height; i++)  //Creates the body of the board
   std::cout << std::endl;
 
   std::cout << "Score : " << score << std::endl;
-
-  std::cout << "Ntail: " << nTail << std::endl;
 }
 void Input()
 {
@@ -117,20 +119,20 @@ void Input()
 }
 void Logic()
 {
-int prevX = tailX[0];   //Previous coordinates of the tail
-int prevY = tailY[0];    //prevX/Y = beggining of array of tail coordinates
+int prevX = tailX[0];     //Will hold the first instance of tail
+int prevY = tailY[0];    
 int prev2X;             
-int prev2Y;             //Create prev2X/Y
+int prev2Y;             //Will hold any other tails
 tailX[0] = x;         
-tailY[0] = y;           //the beggining of the array coordinates = head coordinates
+tailY[0] = y;           //Makes the very first tail follow the previous head
 
 for(int i = 1; i < nTail; i++)
 {
-  prev2X = tailX[0];  //prev2X/Y equal the head coordinates now too
-  prev2Y = tailY[0];
-  tailX[i] = prevX;   //the second tail coordinates = the head coordinates
+  prev2X = tailX[i];  //prev2X/Y will equal the initial head coordinates
+  prev2Y = tailY[i];
+  tailX[i] = prevX;   //the second tail coordinates will equal the first tail's
   tailY[i] = prevY;
-  prevX = prev2X;     
+  prevX = prev2X;    
   prevY = prev2Y;
 
 
@@ -172,9 +174,9 @@ switch(dir)   //Based on what direction currently is, change coordinates of snak
 
   if ( x == fruitX && y == fruitY)  //If snake reaches the fruit, spawn fruit elsewhere, increase score
   {
-    score = score + 1;
-    fruitX = rand() % width;
-    fruitY = rand() % height;
+    score = score + 10;
+    fruitX = rand() % fruit_spawn_w + 1;
+    fruitY = rand() % fruit_spawn_h + 1;
     nTail++;
 
   }
@@ -189,7 +191,7 @@ int main()
     Draw();
     Input();
     Logic();
-    //sleep(1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(75)); //makes games less fast paced/more enjoyable
   }
   return 0;
 }
